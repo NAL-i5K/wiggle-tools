@@ -26,8 +26,8 @@ kinomoto[AT]sakura[DOT]idv[DOT]tw
 
 
 def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile=False, use_gzip=False):
-    input_file_prefix = os.path.splitext(fasta_filename)[0]
     if bigwig_filename is None:
+        input_file_prefix = os.path.splitext(fasta_filename)[0]
         bigwig_filename = '%s.bigwig' % input_file_prefix
 
     output_file_prefix = os.path.splitext(bigwig_filename)[0]
@@ -70,7 +70,7 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
         if len(line) > 0:
             if line[0] == ">":  # in header
                 if "nucl" in dir():
-                    if nucl != "N": # Processing the last base
+                    if nucl != "N":  # Processing the last base
                         wig_file.write("fixedStep chrom=%s start=%i step=1 span=%i\n%i\n" % (chromosome, base_start_pos, continuous_base_len, base_score[previous_base]))
                         base_start_pos = 0
                         continuous_base_len = 0
@@ -90,54 +90,31 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
                     sizes[chromosome] = counter  # count chromosome size
                     nucl = nucl.upper()
 
-                    if previous_base == "":	# in the first base
+                    if previous_base == "":	 # in the first base
                         wig_file.write("fixedStep chrom=%s start=1 step=1 span=1\n" % (chromosome))
                         previous_base = nucl
                         continuous_base_len = 1
                         base_start_pos = 1
                         continue
 
-                    # if nucl == "N":
-                        # if previous_base != "N":
-                            # wig_file.write("fixedStep chrom=%s start=%i step=1 span=%i\n%i\n" % (chromosome, base_start_pos, continuous_base_len, base_score[previous_base]))
-
-                        # previous_base = "N"
-                        # continuous_base_len = 1
-                        # base_start_pos = counter+1
-                        # continue
-
                     elif base_substitution[nucl] == base_substitution[previous_base]:  # hit bases continuously
                         continuous_base_len += 1
 
                     else:
-                        # wig_file.write("fixedStep chrom=%s start=%i step=1 span=%i\n%i\n" % (chromosome, base_start_pos, continuous_base_len, base_score[previous_base]))
-                        for ii in range(0,continuous_base_len):
+                        for ii in range(0, continuous_base_len):
                             if base_score[previous_base]*continuous_base_len > MaxScore:
                                 wig_file.write("%i\n" % (MaxScore))
                             elif base_score[previous_base]*continuous_base_len < minScore:
                                 wig_file.write("%i\n" % (minScore))
                             else:
                                 wig_file.write("%i\n" % (base_score[previous_base]*continuous_base_len))
-                        
                         continuous_base_len = 1
                         base_start_pos = counter
-                    
                     previous_base = nucl
-
-            # if continuous_base_len > 1:
-                # for ii in range(0,continuous_base_len):
-                    # if base_score[previous_base]*continuous_base_len > MaxScore:
-                        # wig_file.write("%i\n" % (MaxScore))
-                    # elif base_score[previous_base]*continuous_base_len < minScore:
-                        # wig_file.write("%i\n" % (minScore))
-                    # else:
-                        # wig_file.write("%i\n" % (base_score[previous_base]*continuous_base_len))
-            # else:
-                # wig_file.write("%i\n" % (base_score[previous_base]*continuous_base_len))
 
     for key, value in sizes.items():
         chr_sizes.write("%s\t%i\n"%(key, value))
-    
+
     fp.close()
     wig_file.close()
     chr_sizes.close()
@@ -167,10 +144,18 @@ if __name__ == '__main__':
     if len(args) == 0:
         print __doc__
         sys.exit()
-    kwargs = dict(
-        bigwig_filename=options.bigwig_filename,
-        use_tempfile=options.use_tempfile,
-        keep_tempfile=options.keep_tempfile,
-        use_gzip=options.use_gzip)
-    for fasta_filename in args:
-        main(fasta_filename, **kwargs)
+    else:
+        try:
+            p = subprocess.Popen(["wigToBigWig"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except OSError:
+            print "Please check your wigToBigWig is in $PATH"
+            sys.exit()
+        except subprocess.CalledProcessError:  # exit status 255 is expected
+            pass
+        kwargs = dict(
+            bigwig_filename=options.bigwig_filename,
+            use_tempfile=options.use_tempfile,
+            keep_tempfile=options.keep_tempfile,
+            use_gzip=options.use_gzip)
+        for fasta_filename in args:
+            main(fasta_filename, **kwargs)

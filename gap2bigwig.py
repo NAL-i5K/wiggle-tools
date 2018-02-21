@@ -28,8 +28,8 @@ kinomoto[AT]sakura[DOT]idv[DOT]tw
 
 
 def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile=False, use_gzip=False):
-    input_file_prefix = os.path.splitext(fasta_filename)[0]
     if bigwig_filename is None:
+        input_file_prefix = os.path.splitext(fasta_filename)[0]
         bigwig_filename = '%s.bigwig' % input_file_prefix
 
     output_file_prefix = os.path.splitext(bigwig_filename)[0]
@@ -77,7 +77,7 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
             else:   # in seq.
                 for nucl in line:
                     counter += 1
-                    if nucl.upper() == "N": # hit N
+                    if nucl.upper() == "N":  # hit N
                         if N_len == 0:
                             N_start_pos = counter
                         N_len += 1
@@ -85,12 +85,12 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
                         wig_file.write("fixedStep chrom=%s start=%i step=1 span=%i\n1\n" % (chromosome, N_start_pos, N_len))
                         N_len = 0
                         N_start_pos = 0
-                        
+
                     sizes[chromosome] = counter  # count chromosome size
 
     for key, value in sizes.items():
         chr_sizes.write("%s\t%i\n" % (key, value))
-    
+
     fp.close()
     wig_file.close()
     chr_sizes.close()
@@ -117,10 +117,18 @@ if __name__ == '__main__':
     if len(args) == 0:
         print __doc__
         sys.exit()
-    kwargs = dict(
-        bigwig_filename=options.bigwig_filename,
-        use_tempfile=options.use_tempfile,
-        keep_tempfile=options.keep_tempfile,
-        use_gzip=options.use_gzip)
-    for fasta_filename in args:
-        main(fasta_filename, **kwargs)
+    else:
+        try:
+            p = subprocess.Popen(["wigToBigWig"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except OSError:
+            print "Please check your wigToBigWig is in $PATH"
+            sys.exit()
+        except subprocess.CalledProcessError:
+            pass
+        kwargs = dict(
+            bigwig_filename=options.bigwig_filename,
+            use_tempfile=options.use_tempfile,
+            keep_tempfile=options.keep_tempfile,
+            use_gzip=options.use_gzip)
+        for fasta_filename in args:
+            main(fasta_filename, **kwargs)
