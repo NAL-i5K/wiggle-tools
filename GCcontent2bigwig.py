@@ -24,13 +24,14 @@ Prerequisites:
 kinomoto[AT]sakura[DOT]idv[DOT]tw
 '''
 
+
 def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile=False, use_gzip=False):
     input_file_prefix = os.path.splitext(fasta_filename)[0]
     if bigwig_filename is None:
         bigwig_filename = '%s.bigwig' % input_file_prefix
-        
+
     output_file_prefix = os.path.splitext(bigwig_filename)[0]
-    
+
     if os.path.abspath(fasta_filename) == os.path.abspath(bigwig_filename):
         sys.stderr.write('Bad arguments, input and output files are the same.\n')
         sys.exit(1)
@@ -55,15 +56,15 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
     chromosome = "My_sequence"
     counter = 0
     sizes = dict()
-    base_score = {"C":1, "G":1, "A":-1, "T":-1, "N":0}
-    base_substitution = {"C":"CG", "G":"CG", "A":"AT", "T":"AT", "N":"N"}
-    
+    base_score = {"C": 1, "G": 1, "A": -1, "T": -1, "N": 0}
+    base_substitution = {"C": "CG", "G": "CG", "A": "AT", "T": "AT", "N": "N"}
+
     if use_gzip:
         import gzip
         fp = gzip.open(fasta_filename, "rb")
     else:
         fp = open(fasta_filename, "r")
-        
+
     for line in fp:
         line = line.strip()
         if len(line) > 0:
@@ -85,8 +86,8 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
                     sys.exit(1)
             else:   # in seq.
                 for nucl in line:
-                    counter+=1
-                    sizes[chromosome] = counter # count chromosome size
+                    counter += 1
+                    sizes[chromosome] = counter  # count chromosome size
                     nucl = nucl.upper()
 
                     if previous_base == "":	# in the first base
@@ -99,17 +100,17 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
                     # if nucl == "N":
                         # if previous_base != "N":
                             # wig_file.write("fixedStep chrom=%s start=%i step=1 span=%i\n%i\n" % (chromosome, base_start_pos, continuous_base_len, base_score[previous_base]))
-                        
+
                         # previous_base = "N"
                         # continuous_base_len = 1
                         # base_start_pos = counter+1
                         # continue
 
-                    elif base_substitution[nucl] == base_substitution[previous_base]: # hit bases continuously
-                        continuous_base_len+=1
+                    elif base_substitution[nucl] == base_substitution[previous_base]:  # hit bases continuously
+                        continuous_base_len += 1
 
                     else:
-                        #wig_file.write("fixedStep chrom=%s start=%i step=1 span=%i\n%i\n" % (chromosome, base_start_pos, continuous_base_len, base_score[previous_base]))
+                        # wig_file.write("fixedStep chrom=%s start=%i step=1 span=%i\n%i\n" % (chromosome, base_start_pos, continuous_base_len, base_score[previous_base]))
                         for ii in range(0,continuous_base_len):
                             if base_score[previous_base]*continuous_base_len > MaxScore:
                                 wig_file.write("%i\n" % (MaxScore))
@@ -132,7 +133,7 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
                     # else:
                         # wig_file.write("%i\n" % (base_score[previous_base]*continuous_base_len))
             # else:
-                 # wig_file.write("%i\n" % (base_score[previous_base]*continuous_base_len))
+                # wig_file.write("%i\n" % (base_score[previous_base]*continuous_base_len))
 
     for key, value in sizes.items():
         chr_sizes.write("%s\t%i\n"%(key, value))
@@ -151,6 +152,7 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
         os.remove(wig_filename)
 
     print "Done."
+
 
 if __name__ == '__main__':
     parser = OptionParser()
