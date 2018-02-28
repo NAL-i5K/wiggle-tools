@@ -8,7 +8,7 @@ from optparse import OptionParser
 from contextlib import contextmanager
 
 '''
-Calculate GC content from a FASTA file and convert it to BigWig file format.
+Calculate GC content from a FASTA file and convert it to BigWig file format.(Version 1.2.0)
 
 Usage:
     GCcontent2bigwig.py <FASTA file>
@@ -22,8 +22,8 @@ Prerequisites:
 
 (c) Chien-Yueh Lee 2014-2015 / MIT Licence
 kinomoto[AT]sakura[DOT]idv[DOT]tw
-'''
 
+'''
 
 def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile=False, use_gzip=False):
     if bigwig_filename is None:
@@ -48,17 +48,12 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
         chr_sizes_filename = tempfile.NamedTemporaryFile(delete=False).name
     chr_sizes = open(chr_sizes_filename, "w")
 
-    MaxScore = 100
-    minScore = -100
     base_start_pos = 0
-    continuous_base_len = 0
-    previous_base = ""
     chromosome = "My_sequence"
     counter = 0
     sizes = dict()
-    base_score = {"C": 1, "G": 1, "A": -1, "T": -1, "N": 0}
-    base_substitution = {"C": "CG", "G": "CG", "A": "AT", "T": "AT", "N": "N"}
-
+    base_score = {"C":1, "G":1,"S":1,"A":0, "T":0,"W":0}
+    code = ["N","R","Y","M","K","H","B","V","D"]
     if use_gzip:
         import gzip
         fp = gzip.open(fasta_filename, "rb")
@@ -69,48 +64,35 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
         line = line.strip()
         if len(line) > 0:
             if line[0] == ">":  # in header
-                if "nucl" in dir():
-                    if nucl != "N":  # Processing the last base
-                        wig_file.write("fixedStep chrom=%s start=%i step=1 span=%i\n%i\n" % (chromosome, base_start_pos, continuous_base_len, base_score[previous_base]))
-                        base_start_pos = 0
-                        continuous_base_len = 0
-                        previous_base = ""
-
                 m = re.findall("(?<=>)[\w\-\|.]+", line)
                 if m is not None:
                     chromosome = m[0]
                     counter = 0
+                    base_start_pos = 0
                     print "Processing %s" % m[0]
                 else:
                     print "No chromosome match!"
                     sys.exit(1)
             else:   # in seq.
                 for nucl in line:
-                    counter += 1
-                    sizes[chromosome] = counter  # count chromosome size
+                    counter+=1
+                    sizes[chromosome] = counter # count chromosome size
                     nucl = nucl.upper()
 
-                    if previous_base == "":	 # in the first base
-                        wig_file.write("fixedStep chrom=%s start=1 step=1 span=1\n" % (chromosome))
-                        previous_base = nucl
-                        continuous_base_len = 1
-                        base_start_pos = 1
+                    if nucl in code:
                         continue
+                    else:	#ATCGSW
+                        base_start_pos+=1
 
-                    elif base_substitution[nucl] == base_substitution[previous_base]:  # hit bases continuously
-                        continuous_base_len += 1
+                        if counter == 1:
+                            wig_file.write("fixedStep chrom=%s start=1 step=1 span=1\n" % (chromosome))
 
-                    else:
-                        for ii in range(0, continuous_base_len):
-                            if base_score[previous_base]*continuous_base_len > MaxScore:
-                                wig_file.write("%i\n" % (MaxScore))
-                            elif base_score[previous_base]*continuous_base_len < minScore:
-                                wig_file.write("%i\n" % (minScore))
-                            else:
-                                wig_file.write("%i\n" % (base_score[previous_base]*continuous_base_len))
-                        continuous_base_len = 1
-                        base_start_pos = counter
-                    previous_base = nucl
+                        if base_start_pos != counter: # base_start_pos will not be equal to counter if N bases hit
+                            base_start_pos = counter
+                            wig_file.write("fixedStep chrom=%s start=%i step=1 span=1\n" % (chromosome, base_start_pos))
+
+                        wig_file.write("%i\n" % (base_score[nucl]))
+
 
     for key, value in sizes.items():
         chr_sizes.write("%s\t%i\n"%(key, value))
@@ -129,7 +111,6 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
         os.remove(wig_filename)
 
     print "Done."
-
 
 if __name__ == '__main__':
     parser = OptionParser()
