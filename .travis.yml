@@ -1,0 +1,10 @@
+os: linux
+language: python
+python: 2.7
+
+before_script:
+  - pip install .
+
+script:
+  - gap2bigwig
+  - GCcontent2bigwig

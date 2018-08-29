@@ -8,10 +8,12 @@ from optparse import OptionParser
 from contextlib import contextmanager
 
 '''
-Calculate GC content from a FASTA file and convert it to BigWig file format.(Version 1.2.0)
+Version: 1.12
+
+Find out gap regions (i.e., N base) from a FASTA file and convert to a BigWig file format.
 
 Usage:
-    GCcontent2bigwig.py <FASTA file>
+    gap2bigwig <FASTA file>
     [-o, --bigwig_filename=<output file name>
      -t, --tempfile
      -k, --keep_tempfile
@@ -22,8 +24,8 @@ Prerequisites:
 
 (c) Chien-Yueh Lee 2014-2015 / MIT Licence
 kinomoto[AT]sakura[DOT]idv[DOT]tw
-
 '''
+
 
 def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile=False, use_gzip=False):
     if bigwig_filename is None:
@@ -48,18 +50,18 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
         chr_sizes_filename = tempfile.NamedTemporaryFile(delete=False).name
     chr_sizes = open(chr_sizes_filename, "w")
 
-    base_start_pos = 0
-    chromosome = "My_sequence"
+    N_start_pos = 0
+    N_len = 0
+    chromosome = 'My_sequence'
     counter = 0
     sizes = dict()
-    base_score = {"C":1, "G":1,"S":1,"A":0, "T":0,"W":0}
-    code = ["N","R","Y","M","K","H","B","V","D"]
+    
     if use_gzip:
         import gzip
         fp = gzip.open(fasta_filename, "rb")
     else:
         fp = open(fasta_filename, "r")
-
+        
     for line in fp:
         line = line.strip()
         if len(line) > 0:
@@ -68,40 +70,31 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
                 if m is not None:
                     chromosome = m[0]
                     counter = 0
-                    base_start_pos = 0
                     print "Processing %s" % m[0]
                 else:
                     print "No chromosome match!"
                     sys.exit(1)
             else:   # in seq.
                 for nucl in line:
-                    counter+=1
-                    sizes[chromosome] = counter # count chromosome size
-                    nucl = nucl.upper()
+                    counter += 1
+                    if nucl.upper() == "N":  # hit N
+                        if N_len == 0:
+                            N_start_pos = counter
+                        N_len += 1
+                    elif N_len > 0:  # N fishined (i.e., hit other nucleotides)
+                        wig_file.write("fixedStep chrom=%s start=%i step=1 span=%i\n1\n" % (chromosome, N_start_pos, N_len))
+                        N_len = 0
+                        N_start_pos = 0
 
-                    if nucl in code:
-                        continue
-                    else:	#ATCGSW
-                        base_start_pos+=1
-
-                        if counter == 1:
-                            wig_file.write("fixedStep chrom=%s start=1 step=1 span=1\n" % (chromosome))
-
-                        if base_start_pos != counter: # base_start_pos will not be equal to counter if N bases hit
-                            base_start_pos = counter
-                            wig_file.write("fixedStep chrom=%s start=%i step=1 span=1\n" % (chromosome, base_start_pos))
-
-                        wig_file.write("%i\n" % (base_score[nucl]))
-
+                    sizes[chromosome] = counter  # count chromosome size
 
     for key, value in sizes.items():
-        chr_sizes.write("%s\t%i\n"%(key, value))
+        chr_sizes.write("%s\t%i\n" % (key, value))
 
     fp.close()
     wig_file.close()
     chr_sizes.close()
 
-    print "Converting wig to bigwig"
     cl = ["wigToBigWig", wig_filename, chr_sizes_filename, bigwig_filename]
     subprocess.check_call(cl)
 
@@ -110,9 +103,8 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
         os.remove(chr_sizes_filename)
         os.remove(wig_filename)
 
-    print "Done."
 
-if __name__ == '__main__':
+def run_main():
     parser = OptionParser()
     parser.add_option('-o', '--bigwig_filename', dest='bigwig_filename')
     parser.add_option('-t', '--tempfile', dest='use_tempfile',
@@ -131,7 +123,7 @@ if __name__ == '__main__':
         except OSError:
             print "Please check your wigToBigWig is in $PATH"
             sys.exit()
-        except subprocess.CalledProcessError:  # exit status 255 is expected
+        except subprocess.CalledProcessError:
             pass
         kwargs = dict(
             bigwig_filename=options.bigwig_filename,
@@ -140,3 +132,7 @@ if __name__ == '__main__':
             use_gzip=options.use_gzip)
         for fasta_filename in args:
             main(fasta_filename, **kwargs)
+
+
+if __name__ == '__main__':
+    run_main()
