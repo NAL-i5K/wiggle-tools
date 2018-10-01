@@ -20,9 +20,6 @@ Usage:
 Prerequisites:
   ucsc_bigwig: wigToBigWig can be downloaded from UCSC Genome Browser (http://hgdownload.cse.ucsc.edu/admin/exe/)
 
-(c) Chien-Yueh Lee 2014-2015 / MIT Licence
-kinomoto[AT]sakura[DOT]idv[DOT]tw
-
 '''
 
 def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile=False, use_gzip=False):
