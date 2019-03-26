@@ -6,7 +6,7 @@ python: 2.7
 before_script:
   - sudo wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/wigToBigWig
   - echo "$PATH"
-  - sudo cp wigToBigWig /usr/local/bin
+  - sudo cp wigToBigWig /home/travis/virtualenv/python2.7.14/bin
 
 script:
   - python gap2bigwig.py example.fna
