@@ -1,11 +1,13 @@
 os: linux
 language: python
 python: 2.7
+install:
+  - pip install .
 
 before_script:
-  - sudo wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/wigToBigWig
-  - sudo cp wigToBigWig /usr/local/bin
+  - wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/wigToBigWig
+  - cp wigToBigWig /usr/local/bin
 
 script:
-  - gap2bigwig example.fna
-  - GCcontent2bigwig example.fna
+  - python gap2bigwig.py example.fna
+  - python GCcontent2bigwig.py example.fna
