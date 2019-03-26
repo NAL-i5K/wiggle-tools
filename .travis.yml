@@ -3,7 +3,8 @@ language: python
 python: 2.7
 
 before_script:
-  - pip install .
+  - sudo wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/wigToBigWig
+  - sudo cp wigToBigWig /usr/local/bin
 
 script:
   - gap2bigwig example.fna
