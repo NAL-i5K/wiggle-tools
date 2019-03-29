@@ -1,0 +1,12 @@
+os: linux
+language: python
+python: 2.7
+
+before_script:
+  - wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/wigToBigWig
+  - sudo chmod +x wigToBigWig
+  - sudo cp wigToBigWig /usr/local/bin
+
+script:
+  - python gap2bigwig.py example.fa
+  - python GCcontent2bigwig.py example.fa

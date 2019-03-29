@@ -37,4 +37,6 @@ Collection of scripts for generating [BigWig](http://genome.ucsc.edu/goldenPath/
   * Download binary:
     - linux: [http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/wigToBigWig](http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/wigToBigWig)
     - mac: [http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.x86_64/wigToBigWig](http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.x86_64/wigToBigWig)
+  * Make wigToBigwig executable: `chmod +x wigToBigWig` 
   * Put in your `$PATH`, for example, most user have `/usr/local/bin` in `$PATH`, so just copy the binary into it: `cp wigToBigWig /usr/local/bin`
+  
