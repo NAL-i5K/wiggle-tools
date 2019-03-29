@@ -8,5 +8,5 @@ before_script:
   - sudo cp wigToBigWig /usr/local/bin
 
 script:
-  - python gap2bigwig.py example.fna
-  - python GCcontent2bigwig.py example.fna
+  - python gap2bigwig.py example.fa
+  - python GCcontent2bigwig.py example.fa
