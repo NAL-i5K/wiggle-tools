@@ -1,5 +1,7 @@
 # Wiggle-Tools
 
+[![Build Status](https://travis-ci.org/NAL-i5K/wiggle-tools.svg?branch=master)](https://travis-ci.org/NAL-i5K/wiggle-tools)
+
 Collection of scripts for generating [BigWig](http://genome.ucsc.edu/goldenPath/help/bigWig.html) files.
 
 * [GCcontent2bigwig.py](GCcontent2bigwig.py): calculate GC content from a FASTA file and convert it to BigWig file format.
