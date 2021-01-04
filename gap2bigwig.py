@@ -70,9 +70,9 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
                 if m is not None:
                     chromosome = m[0]
                     counter = 0
-                    print "Processing %s" % m[0]
+                    print ("Processing %s" % m[0])
                 else:
-                    print "No chromosome match!"
+                    print ("No chromosome match!")
                     sys.exit(1)
             else:   # in seq.
                 for nucl in line:
@@ -115,13 +115,13 @@ if __name__ == '__main__':
                       action='store_true', default=False)
     (options, args) = parser.parse_args()
     if len(args) == 0:
-        print __doc__
+        print (__doc__)
         sys.exit()
     else:
         try:
             p = subprocess.Popen(["wigToBigWig"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except OSError:
-            print "Please check your wigToBigWig is in $PATH"
+            print ("Please check your wigToBigWig is in $PATH")
             sys.exit()
         except subprocess.CalledProcessError:
             pass
