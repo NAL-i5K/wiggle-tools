@@ -66,9 +66,9 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
                     chromosome = m[0]
                     counter = 0
                     base_start_pos = 0
-                    print "Processing %s" % m[0]
+                    print ("Processing %s" % m[0])
                 else:
-                    print "No chromosome match!"
+                    print ("No chromosome match!")
                     sys.exit(1)
             else:   # in seq.
                 for nucl in line:
@@ -98,7 +98,7 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
     wig_file.close()
     chr_sizes.close()
 
-    print "Converting wig to bigwig"
+    print ("Converting wig to bigwig")
     cl = ["wigToBigWig", wig_filename, chr_sizes_filename, bigwig_filename]
     subprocess.check_call(cl)
 
@@ -107,7 +107,7 @@ def main(fasta_filename, bigwig_filename=None, use_tempfile=False, keep_tempfile
         os.remove(chr_sizes_filename)
         os.remove(wig_filename)
 
-    print "Done."
+    print ("Done.")
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -120,13 +120,13 @@ if __name__ == '__main__':
                       action='store_true', default=False)
     (options, args) = parser.parse_args()
     if len(args) == 0:
-        print __doc__
+        print (__doc__)
         sys.exit()
     else:
         try:
             p = subprocess.Popen(["wigToBigWig"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except OSError:
-            print "Please check your wigToBigWig is in $PATH"
+            print ("Please check your wigToBigWig is in $PATH")
             sys.exit()
         except subprocess.CalledProcessError:  # exit status 255 is expected
             pass
